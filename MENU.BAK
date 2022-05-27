@@ -1,0 +1,1088 @@
+// all menu options like open save + scrolling through a window function
+// + popup menu functions, and drawing screen function
+#ifndef __MENU_CPP
+#define __MENU_CPP
+#define ScrollWindowWidth 25
+#define CheckMemory if( farcoreleft() < imagesize(x1-3,y1-3,x2+3,y2+3) )\
+		     {                                                  \
+			MB.Message(200,300,400,400,"Not enough memory");\
+			return 0;                                       \
+		     }
+
+void scrollbar(int x1,int y1,int x2,int y2,int sz);
+void far reverse(int x1,int y1,int x2,int y2,char *prompt,int fc,int bc,char size);
+
+int far scrollbox(int x1,int y1,int x2,int y2,char contents[][ScrollWindowWidth],int Titems,int vi,int fc,int bc)
+{
+	 void far*ip;
+	 y2 = y1+(vi*26);
+	 ShowMouse();
+	 int holder = 0;
+	 PushButton pb;
+	 Toolbar filesip;
+	 x1-=3;y1-=3;x2+=3;y2+=3;
+	 pb.init(x1,y1,x2,y2,"");
+
+	 ip = farmalloc(imagesize(x1-1,y1-1,x2+1,y2+1));
+	 if(ip == 0)
+	 {
+		MB.Message(200,100,300,200,"Memory not available");
+		return 0;
+	 }
+	 HideMouse();
+	 getimage(x1-1,y1-1,x2+1,y2+1,ip);
+	 ShowMouse();
+	 pb.unpushed();
+	 filesip.show(15);
+
+	 settextstyle(1,0,1);
+	 for( int i = 0 ; i < vi ; i++)
+	 {
+	 reverse(x1,y1+(holder*26),x2,y1+(holder*26)+26,contents[holder],fc,bc);
+	 holder++;
+	 }
+	 i = 0;
+	 holder=0;
+	 reverse(x1,y1+(i*26),x2,y1+(i*26)+26,contents[holder],bc,fc);
+	 char c1 = 0,c2;
+
+	 while( c1 != 27)
+	 {
+	 c1 = getch();
+
+	 switch(c1)
+	 {
+	 case 0:
+	 c2 = getch();
+	 switch(c2)
+	 {
+		case 80:
+		   reverse(x1,y1+(i*26),x2,y1+(i*26)+26,contents[holder],fc,bc);
+
+		   if( i == vi-1)
+		   {
+		   i = vi-1;
+		   if(holder != Titems-1)
+		   scroll(x1,y1+26,x2,y1+(i*26)+26,26,1,bc);
+		   }
+		   else i++;
+		   if( holder == Titems-1)
+		   {
+		   holder = Titems-1;
+		   }
+		   else holder++;
+
+		   reverse(x1,y1+(i*26),x2,y1+(i*26)+26,contents[holder],bc,fc);
+		   break;
+
+		case 72:
+		   reverse(x1,y1+(i*26),x2,y1+(i*26)+26,contents[holder],fc,bc);
+
+		   if( i == 0)
+		   {
+		   i = 0;
+		   if( holder != 0)
+			   scroll(x1,y1,x2,y1+(26*(vi-1)),26,0,bc);
+		   }
+		   else i--;
+
+		   if(holder == 0)
+			 holder = 0;
+		   else holder--;
+
+		   reverse(x1,y1+(i*26),x2,y1+(i*26)+26,contents[holder],bc,fc);
+		   break;
+
+	}
+	break;
+	  case 9:
+	  case 13:
+		 HideMouse();
+		 putimage(x1-1,y1-1,ip,0);
+		 ShowMouse();
+		 farfree(ip);
+	 return holder+1;
+	  }
+	 }
+
+	 HideMouse();
+	 putimage(x1-1,y1-1,ip,0);
+	 ShowMouse();
+	 farfree(ip);
+ return 0;
+}
+/* ออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออ */
+char far pop_mouse_click(int x1,int y1,int x2,int y2,int Titems,int h)
+// Checks Mouse Click for POPUP MENU
+{
+	char ch,i=0;
+	while(!kbhit())
+	{
+	if(Clicked(x1,y1+(i*26),x2,y1+(i*26)+26))
+	{
+		return (i+1);
+	}
+	else
+	  if(Clicked(0,0,x1,getmaxy()) || Clicked(x2,0,getmaxx(),getmaxy()))
+	     return 27;
+	else
+	  if(Clicked(0,y2,getmaxx(),getmaxy()))
+	     return 27;
+
+	if(  i == Titems-1)
+		 i = 0;
+	else i++;
+	}
+	ch = getch();
+	x1++;y1++;x2++;y2++;Titems++;
+	return (ch);
+}
+/* อออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออ */
+void far reverse(int x1,int y1,int x2,int y2, char far*prompt,int fc,int bc)
+{
+	 HideMouse();char a;
+	 a = getcolor();
+	 setfillstyle(1,bc);
+	 bar(x1,y1,x2,y2);
+	 setcolor(fc);
+	 settextstyle(2,0,6);
+	 outtextxy(x1,y1,prompt);
+	 ShowMouse();
+	 setcolor(a);
+}
+/* ออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออ */
+void far reverse(int x1,int y1,int x2,int y2, char far*prompt,int fc,int bc,char size)
+{
+	 HideMouse();char a;
+	 a = getcolor();
+	 setfillstyle(1,bc);
+	 bar(x1,y1,x2,y2);
+	 setcolor(fc);
+	 settextstyle(2,0,size);
+	 outtextxy(x1,y1,prompt);
+	 ShowMouse();
+	 setcolor(a);
+}
+/* อออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออ */
+/*
+void far reverse(int x1,int y1,int x2,int y2, char *prompt,int fc,int bc)
+{
+	 HideMouse();char a;
+	 a = getcolor();
+	 setfillstyle(1,bc);
+	 bar(x1,y1,x2,y2);
+	 setcolor(fc);
+	 settextstyle(2,0,6);
+	 outtextxy(x1,y1,prompt);
+	 ShowMouse();
+	 setcolor(a);
+}
+/* ออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออ */
+/*
+void far reverse(int x1,int y1,int x2,int y2, char *prompt,int fc,int bc,char size)
+{
+	 HideMouse();char a;
+	 a = getcolor();
+	 setfillstyle(1,bc);
+	 bar(x1,y1,x2,y2);
+	 setcolor(fc);
+	 settextstyle(2,0,size);
+	 outtextxy(x1,y1,prompt);
+	 ShowMouse();
+	 setcolor(a);
+}
+/* ออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออ */
+int far Pop_up_menu(int x1,int y1,int x2,int y2,char contents[][ScrollWindowWidth],int Titems,int fc,int bc,char help[][55],int d,int e)
+{
+     void far *ip;ShowMouse();
+     y2 = y1+(Titems*26);
+     PushButton pb;
+     ip = farmalloc(imagesize(x1-1-3,y1-1-3,x2+1+3,y2+1+3));
+     if(ip==0)
+	 {
+		MB.Message(200,150,400,250,"Insufficient memory");
+		return 0;
+	 }
+     HideMouse();
+     getimage(x1-1-3,y1-1-3,x2+1+3,y2+1+3,ip);
+     ShowMouse();
+     pb.init(x1-1-3,y1-1-3,x2+1+3,y2+1+3,"");
+     pb.unpushed();
+     setcolor(15);
+     settextstyle(1,0,1);
+     for( int i = 0 ; i < Titems ; i++)
+     {
+	 reverse(x1,y1+(i*26),x2,y1+(i*26)+26,contents[i],fc,bc);
+     }
+	 i = 0;
+	 reverse(15,getmaxy()-20,getmaxx()-25,getmaxy()-5,help[i],15,7,5);
+	 reverse(x1,y1+(i*26),x2,y1+(i*26)+26,contents[i],bc,fc);
+     char c1 = 0,c2,k = 0;
+     while( c1 != 27)
+     {
+	c1 = pop_mouse_click(x1,y1,x2,y2,Titems);
+	if( c1 <= Titems && c1 != 0)
+	{
+	   c1--;
+	   reverse(x1,y1+(0*26),x2,y1+(0*26)+26,contents[0],fc,bc);
+	   reverse(x1,y1+(k*26),x2,y1+(k*26)+26,contents[k],fc,bc);
+	   reverse(x1,y1+(c1*26),x2,y1+(c1*26)+26,contents[c1],bc,fc);
+	   k = c1;
+	   i = k;
+	   while(Clicked(x1,y1+(i*26),x2,y1+(i*26)+26));
+	   HideMouse();putimage(x1-1-3,y1-1-3,ip,0);ShowMouse();
+		 putimage(x1-1-3,y1-1-3,ip,0);
+		 farfree(ip);
+	   return c1+1;
+	}
+	 reverse(x1,y1+(i*26),x2,y1+(i*26)+26,contents[i],bc,fc);
+	 switch(c1)
+	 {
+	 case 0:
+	   c2 = getch();
+	   switch(c2)
+	   {
+		case 80:
+		  reverse(x1,y1+(i*26),x2,y1+(i*26)+26,contents[i],fc,bc);
+		  if( i >= Titems-1)
+			i = 0;
+		  else i++;
+			reverse(x1,y1+(i*26),x2,y1+(i*26)+26,contents[i],bc,fc);
+			k = i;
+			reverse(15,getmaxy()-20,getmaxx()-25,getmaxy()-5,help[i],15,7,5);
+		  break;
+
+		case 72:
+		reverse(x1,y1+(i*26),x2,y1+(i*26)+26,contents[i],fc,bc);
+		if( i == 0)
+		    i = Titems-1;
+		else i--;
+		reverse(x1,y1+(i*26),x2,y1+(i*26)+26,contents[i],bc,fc);
+		k = i;
+		reverse(15,getmaxy()-20,getmaxx()-25,getmaxy()-5,help[i],15,7,5);
+		break;
+
+	   case 77:
+		HideMouse();
+		putimage(x1-1-3,y1-1-3,ip,0);
+		ShowMouse();
+		farfree(ip);
+		return -1;
+
+	    case 75:
+		 HideMouse();
+		 putimage(x1-1-3,y1-1-3,ip,0);
+		 ShowMouse();
+		 farfree(ip);
+reverse(15,getmaxy()-20,getmaxx()-25,getmaxy()-5,"F1 Help  F2 Save  F3 Open  F5 Size+  F6 Change Font F7 Size- Alt+Q Exit",15,7,5);
+		 default :
+		 BEEP1;break;
+	}break;
+	case 13:
+	 HideMouse();
+	 putimage(x1-1-3,y1-1-3,ip,0);
+	 ShowMouse();
+	 farfree(ip);
+reverse(15,getmaxy()-20,getmaxx()-25,getmaxy()-5,"F1 Help  F2 Save  F3 Open  F5 Size+  F6 Change Font F7 Size- Alt+Q Exit",15,7,5);
+	 return i+1;
+
+	default :
+	  BEEP1;break;
+
+	}
+    }//end while
+	 HideMouse();
+	 putimage(x1-1-3,y1-1-3,ip,0);
+	 ShowMouse();
+reverse(15,getmaxy()-20,getmaxx()-25,getmaxy()-5,"F1 Help  F2 Save  F3 Open  F5 Size+  F6 Change Font F7 Size- Alt+Q Exit",15,7,5);
+	 farfree(ip);
+ return 0;
+}
+/* ออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออ */
+
+void far scroll(int x1,int y1,int x2,int y2,int pixel,int direction,int fillcolor)
+{
+	 void far*ip;
+	 ip = farmalloc(imagesize(x1,y1,x2,y2));
+	   if( ip == 0)
+	   {
+	   MB.Message(100,100,300,200,"Meemry not available");
+	   return;
+	   }
+	 HideMouse();
+	 getimage(x1,y1,x2,y2,ip);
+	 ShowMouse();
+	 setfillstyle(1,fillcolor);
+	 bar(x1,y1,x2,y2);
+
+	 if(direction == 1)
+	 {
+	 putimage(x1,y1-pixel,ip,0);
+	 }
+	 else
+	 {
+	 putimage(x1,y1+pixel,ip,0);
+	 }
+	 farfree(ip);
+	 return;
+}
+/* ออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออ */
+void far activate_popup(int w)
+{
+	char file[8][ScrollWindowWidth] = {
+					{" New              "},
+					{" Open      F3     "},
+					{" Save      F2     "},
+					{" Copy             "},
+					{" Rename           "},
+					{" Dos Shell        "},
+					{" Print            "},
+					{" Exit      Alt+Q  "}
+				};
+  signed short ch = -1;
+  char help[3][ScrollWindowWidth] = {
+					{" Keyboard Layout  F1 "},
+					{" Editor Commands     "},
+					{" About               "}
+				 };
+
+ char options[5][ScrollWindowWidth] = {
+					 {" Calculator "},
+					 {" Painter    "},
+					 {" Music      "}
+				  };
+ char help1[8][55] = {
+			  { " Create a New File            "},
+			  { " Open a Existing File         "},
+			  { " Save The File                "},
+			  { " Copy a File to New Location  "},
+			  { " Renames a File               "},
+			  { " Goto the DOS Shell temporily "},
+			  { " Print The File 		     "},
+			  { " Exit Marathi WordProcessor   "}
+			};
+ char help2[3][55] = {
+			  { " Displays The Marathi Letters Pattern For This Keyboard"},
+			  { " Help About Editor Commands                            "},
+			  { " Information About Developers And The Version          "}
+			};
+ char help3[3][55] = {
+			  { " To Perform Arithmatic Calculations  "},
+			  { " A PaintBrush Facility For Drawings  "},
+			  { " Have a Fun Sometime                 "}
+			};
+
+			  char quit[2][ScrollWindowWidth] = {
+				  {" DOS Prompt          "},
+				  {" Reboot the Computer "}
+				 };
+			  char hquit[2][55] = {
+				  {" Return to the DOS Prompt "},
+				  {" Restarts The Computer    "}
+				};
+
+			char format[4][ScrollWindowWidth] = {
+					{" Change The Font    F6 "},
+					{" Increase The Size  F5 "},
+					{" Decrease The Size  F7 "},
+					{" Change Color       F9 "}
+				     };
+			char helpformat[4][55] = {
+					{" Changes The Font           "},
+					{" Increase Font Size By One  "},
+					{" Decrease Font Size By One  "},
+					{" Change color of character  "}
+					};
+
+ int a,b;char v[5];
+ void far *ptr[4];
+
+ if( w == 1)
+   goto file;
+ if( w == 2)
+   goto options;
+ if( w == 3)
+    goto format;
+ if(w == 4)
+    goto help;
+
+ file :
+	 reverse(70 , 5, 120, 25," File ",15,8 );
+	 ch = Pop_up_menu(70,35,230,250,file,8,1,7,help1);
+	 switch(ch)
+	 {
+		 case 1:
+			editor.show(15);
+			row = 35; mh = 0;
+			counter = 0;
+			col = 125;
+			break;
+
+		 case 2:
+			row = 35;
+			col = 125;
+			counter = 0;
+			mh = openfile();
+			break;
+		 case 3:
+			save_file();
+			break;
+
+		 case 4:
+			   copyfile();
+			   break;
+		 case 5:
+			   renamefile();
+			   break;
+		 case 6:
+
+				MB.Message(100,100,300,200,"Type EXIT To Return ");
+				if(save_screen(ptr))
+				{
+				closegraph();
+				system("command");
+					detectgraph(&a,&b);
+					initgraph(&a,&b,"\\tc");
+				setbkcolor(0);
+				restore_screen(ptr);
+				}
+				else MB.Message(200,100,400,200,"Insufficient Memory");
+				break;
+		 case 7:
+				PrintOut();
+				break;
+		 case 8:
+			  BEEP;BEEP1;
+			  char choi;
+			  choi = Pop_up_menu(120,330,315,385,quit,2,1,7,hquit);
+			  switch(choi)
+			  {
+				 case 1:closegraph();
+						printf("Good Bye...& have a nice day.");
+						exit(0);
+						break;
+
+				 case 2:
+					char yn ;
+					if(save_screen(ptr))
+					{
+					closegraph();
+					printf("\nYou will lost any unsaved information, OK ");
+					printf("\n\a\a Are you sure you want to reboot the computer..(Y/N) ");
+					do{
+						yn = getche();
+						yn = toupper(yn);
+						if( yn == 'Y')
+						{
+							// reboot procedure
+							printf("\n\nComputer Rebooted...\n");
+							break;
+						}
+					}while( yn != 'Y' || yn != 'N' );
+					  detectgraph(&a,&b);
+					  initgraph(&a,&b,"\\tc");
+					setbkcolor(0);
+					restore_screen(ptr);
+					}
+					else  MB.Message(200,100,400,200,"Insufficient Memory");
+					break;
+
+					default : BEEP1; break;
+			  }
+			  break;
+
+		 case -1:
+			 reverse(70 , 5, 120, 25," File ",15,1);
+			 goto options;
+
+		 case -2:
+			 reverse(70 , 5, 120, 25," File ",15,1 );
+			 goto help;
+
+		 default : break;
+	 }
+	 reverse(70 , 5, 120, 25," File ",15,1 );
+	 return;
+
+ options :
+	 reverse(130, 5, 210, 25," Options ",15,8 );
+	 ch = Pop_up_menu(140,35,380,115,options,3,1,7,help3);
+	 switch(ch)
+	 {
+		 case 1:// cal
+				Calculator();
+				break;
+		 case 2:// painter
+				Painter();
+				break;
+		 case 3:// music
+				Music();
+				break;
+		 case -1:
+			  reverse(130, 5, 210, 25," Options ",15,1 );
+			  goto format;
+		 case  -2 :
+			  reverse(130, 5, 210, 25," Options ",15,1);
+			  goto file;
+		 default :
+		   break;
+	}
+	 reverse(130, 5, 210, 25," Options ",15,1);
+	 return;
+
+  format:
+	reverse(215, 5, 270, 25," Format ",15,8 );
+	ch = Pop_up_menu(222,35,452,115,format,4,1,7,helpformat);
+	switch(ch)
+	{
+	  case 1:
+			if( FontNumber == 5)
+				FontNumber = 1;
+			else
+				FontNumber++;
+			 ENG = 0;
+			switch(FontNumber)
+			{
+			case 1 :
+				 sprintf(v,"%s"," Roman");break;
+			case 2 :
+				 sprintf(v,"%s"," Bold");break;
+			case 3 :
+				 row+=5;
+				 sprintf(v,"%s"," B.Italic");break;
+			case 4 :
+				ENG = 1;sprintf(v,"%s"," English");break;
+			case 5 :
+				sprintf(v,"%s"," F.Italic");
+			}
+			changefont.set_prompt_location(0,4);
+			changefont.changeprompt(v);
+					break;
+
+	  case 2:
+			if( FontSize >= 3)
+			    FontSize = 3;
+			else
+			    FontSize++;
+			LFont = FontSize;
+			char v[3];
+			sprintf(v,"%d",FontSize);
+			changesize.changeprompt(v);
+			break;
+	   case 3:
+			if( FontSize == 1)
+				FontSize = 1;
+			else
+				FontSize--;
+			LFont = FontSize;
+
+			sprintf(v,"%d",FontSize);
+			changesize.changeprompt(v);
+			break;
+	   case 4:
+		SetColour();
+		break;
+	   case -1:
+		 reverse(215, 5, 280, 25," Format ",15,1 );
+		 goto help;
+	   case -2:
+		 reverse(215, 5, 280, 25," Format ",15,1 );
+		 goto options;
+	}
+	 reverse(215, 5, 280, 25," Format ",15,1 );
+	 return;
+
+	help : ////
+	 reverse(290, 5, 350, 25, " Help ",15,8 );
+	 ch = Pop_up_menu(292, 35, 510, 115, help, 3, 1, 7, help2);
+	 switch(ch)
+	 {
+		 case 1:
+			if(save_screen(ptr))
+			{
+
+				closegraph();
+				system("mwphelpk");
+					detectgraph(&a,&b);
+					initgraph(&a,&b,"\\tc");
+				setbkcolor(0);
+				restore_screen(ptr);
+			}
+				else MB.Message(200,100,400,200,"Insufficient Memory");
+				break;
+
+		 case 2:
+				if(save_screen(ptr))
+				{
+				closegraph();
+				system("mwphelpc");
+					detectgraph(&a,&b);
+					initgraph(&a,&b,"\\tc");
+				setbkcolor(0);
+				restore_screen(ptr);
+				}
+				else MB.Message(200,100,400,200,"Insufficient Memory");
+				break;
+		 case 3:
+				if(save_screen(ptr))
+				{
+				closegraph();
+				system("mwphelpa");
+					detectgraph(&a,&b);
+					initgraph(&a,&b,"\\tc");
+				setbkcolor(0);
+				restore_screen(ptr);
+				}
+				else MB.Message(200,100,400,200,"Insufficient Memory");
+				break;
+		 case -2:
+			 reverse(290, 5, 350, 25, " Help ",15,1);
+			 goto format;
+		 case  -1 :
+			 reverse(290, 5, 350, 25, " Help ",15,1);
+			 goto file;
+	}
+
+	 reverse(290, 5, 350, 25, " Help ",15,1);
+
+}////////
+/* ออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออ */
+int far scrollbox(int x1,int y1,int x2,int y2, char far*files,int Titems,int vi,int fc,int bc)
+{
+	 void far*ip;ShowMouse();
+	 int holder = 0;y2 = y1+(vi*26);
+	 PushButton pb;
+	 pb.init(x1-3,y1-3,x2+3,y2+3,"");
+	 ip = farmalloc(imagesize(x1-3,y1-3,x2+3,y2+3));
+	 CheckMemory;
+	 if(ip == 0)
+	 {
+			MB.Message(200,300,400,400,"Not enough memory");
+	    return 0;
+	 }
+	 HideMouse();
+	 getimage(x1-3,y1-3,x2+3,y2+3,ip);
+	 ShowMouse();
+
+	 pb.unpushed();
+	 settextstyle(1,0,1);
+     for( int i = 0 ; i < vi ; i++)
+		 {
+			 reverse(x1+5,y1+(holder*26),x2,y1+(holder*26)+26,files+(holder*13),fc,bc);
+			 holder++;
+		 }
+	 i = 0;
+	 holder=0;
+	 reverse(x1+5,y1+(i*26),x2,y1+(i*26)+26,files+(holder*13),bc,fc);
+	 char c1 = 0,c2;
+
+	 while( c1 != 27)
+	 {
+	 c1 = getch();
+	 switch(c1)
+	 {
+	 case 0:
+	 c2 = getch();
+	 switch(c2)
+	 {
+		case 80:
+			 reverse(x1+5,y1+(i*26),x2,y1+(i*26)+26,files+(holder*13),fc,bc);
+
+			 if( i == vi-1)
+			 {
+			 i = vi-1;
+			 if(holder != Titems-1)
+			 scroll(x1,y1+26,x2,y1+(i*26)+26,26,1,bc);
+			 }
+			 else i++;
+			 if( holder == Titems-1)
+			 {
+			 holder = Titems-1;
+			 }
+			 else holder++;
+			 reverse(x1+5,y1+(i*26),x2,y1+(i*26)+26,files+(holder*13),bc,fc);
+			 break;
+
+		case 72:
+			 reverse(x1+5,y1+(i*26),x2,y1+(i*26)+26,files+(holder*13),fc,bc);
+			 if( i == 0)
+			 {
+			 i = 0;
+			 if( holder != 0)
+				 scroll(x1+5,y1,x2,y1+(26*(vi-1)),26,0,bc);
+			 }
+			 else i--;
+			 if(holder == 0)
+					holder = 0;
+			 else holder--;
+				reverse(x1+5,y1+(i*26),x2,y1+(i*26)+26,files+(holder*13),bc,fc);
+			 break;
+	}
+	break;
+
+	case 27 :
+		 HideMouse();
+		 putimage(x1-3,y1-3,ip,0);
+		 ShowMouse();
+reverse(15,getmaxy()-20,getmaxx()-25,getmaxy()-5,"F1 Help  F2 Save  F3 Open  F5 Size+  F6 Change Font F7 Size- Alt+Q Exit",15,7,5);
+		 farfree(ip);
+		 return -1;
+	case 9:
+	case 13:
+	 HideMouse();
+	 putimage(x1-3,y1-3,ip,0);
+	 ShowMouse();
+reverse(15,getmaxy()-20,getmaxx()-25,getmaxy()-5,"F1 Help  F2 Save  F3 Open  F5 Size+  F6 Change Font F7 Size- Alt+Q Exit",15,7,5);
+	 farfree(ip);
+	 return holder+1;
+	}
+ }
+}
+/* ออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออ */
+void far SetColour()
+{
+		char colors[][25] = {
+				{"BLACK    "},
+				{"BLUE      "},
+				{"GREEN     "},
+				{"CYAN      "},
+				{"RED       "},
+				{"MAGENTA   "},
+				{"BROWN     "},
+				{"LIGHTGRAY "},
+				{"DARKGRAY  "},
+				{"LIGHTBLUE "},
+				{"LIGHTGREEN"},
+				{"LIGHTCYAN "},
+				{"LIGHTRED  "},
+				{"LT.MANGETA"},
+				{"YELLOW    "}
+			    };
+		 char helpclr[][55] = {
+			{" The character colour will change to this colour "}
+			    };
+
+		int ch;
+		 ch = Pop_up_menu(100,35,200,115,colors,14,1,15,helpclr,15,4);
+		 if(ch == 27)
+reverse(15,getmaxy()-20,getmaxx()-25,getmaxy()-5,"F1 Help  F2 Save  F3 Open  F5 Size+  F6 Change Font F7 Size- Alt+Q Exit",15,7,5);
+		else
+		 color = ch-1;
+
+}
+
+void far ScreenSaver()
+{
+	char get;
+	char translate[][25]=
+	{
+	{"Translator"},
+	{"Remigton  "}
+	};
+	char trahelp[][55] =
+	{
+	{" The English to Marathi Translator"},
+	{" Remigton Typewritter"}
+	};
+
+	get = Pop_up_menu(200,100,300,160,translate,2,1,7,trahelp);
+	if(get == 1)
+		Trans = 1;
+	else
+	     Trans = 0;
+return;
+}
+void far screen()
+{
+	  setfillstyle(1,7);
+	  bar(0,0,getmaxx(),getmaxy());
+
+	   smwp.show(10);// small menu mwp
+	   mb.show(1);// menu bar
+	   st.show(7);// status bar
+	   tb.show(7);// tool bar
+		 fl.show(7);// file r c
+	   mwp.show(4);// win 95
+		setcolor(4);
+		settextstyle(2,0,6);
+		outtextxy(5,3," MWp");
+		setcolor(15);
+
+	   setcolor(15);
+	   settextstyle(8,1,3);
+	   outtextxy(0,130,"Marathi WordProcessor");
+
+	   fileshow.show(15);
+	   fontshow.show(15);
+	   sizeshow.show(15);
+		changefont.show(15);
+		changesize.show(15);
+
+	   rows.ShowStatusBox();
+	   cols.ShowStatusBox();
+
+		 setcolor(1);
+	   settextstyle(2,0,5);//195 fon,305 si,405 r,505 c
+	   outtextxy(225,89,"Font");
+	   outtextxy(365,89,"Size");
+	   outtextxy(474,89,"Row");
+	   outtextxy(536,89,"Col");// 475
+
+	   outtextxy(5,89," File name :");
+	   outtextxy(5,60," Num Lock ");
+	   outtextxy(137,60,"Scroll Lock");
+	   outtextxy(269,60,"Caps Lock ");
+	   outtextxy(389,60,"Insert ");
+
+	 fileshow.changeprompt(" Sample.MWp");
+	 changefont.changeprompt(" 1");
+	 changesize.changeprompt(" 1");
+	 cols.ChangePrompt(" 1");
+	 rows.ChangePrompt(" 1");
+
+	 p1.unpushed();
+	 p2.unpushed();
+	 p3.unpushed();
+	 p4.unpushed();
+	 p5.unpushed();
+	 p6.unpushed();
+	 p7.unpushed();
+	 p8.unpushed();
+		 szminus.unpushed();
+		 ftminus.unpushed();
+	 caps.ShowStatusBox();
+	 num.ShowStatusBox();
+	 scrolllock.ShowStatusBox();
+	 editor.show(15);
+	 help.show(3);
+	 helpline.ShowStatusBox();
+
+		setcolor(0);
+	 line(getmaxx(),0,getmaxx(),getmaxy());
+	 line(getmaxx()-10,getmaxy(),getmaxx(),getmaxy()-10);
+	 line(getmaxx()-7,getmaxy(),getmaxx(),getmaxy()-7);
+	 line(getmaxx()-4,getmaxy(),getmaxx(),getmaxy()-4);
+
+	 initial_key_board_state();
+return;
+}
+/* ออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออ */
+int  far save_screen(void far *buf[4])
+{
+   unsigned size;
+   int ystart=0, yend, yincr, block;
+
+   yincr = (getmaxy()+1) / 4;
+   yend = yincr;
+   size = imagesize(0, ystart, getmaxx(), yend);
+
+   for (block=0; block<=3; block++)
+   {
+	if ((buf[block] = farmalloc(size)) == NULL)
+	  {
+		 MB.Message(200,100,400,250,"Not enough memory");
+		 return 0;
+	  }
+      HideMouse();
+      getimage(0, ystart, getmaxx(), yend, buf[block]);
+      ShowMouse();
+	ystart = yend + 1;
+	  yend += yincr + 1;
+   }
+   return 1;
+}
+
+void far restore_screen(void far *buf[4])
+{
+   int ystart=0, yend, yincr, block;
+
+   yincr = (getmaxy()+1) / 4;
+   yend = yincr;
+
+   for (block=0; block<=3; block++)
+	 {
+	HideMouse();
+      putimage(0, ystart, buf[block], COPY_PUT);
+      ShowMouse();
+      farfree(buf[block]);
+	ystart = yend + 1;
+      yend += yincr + 1;
+   }
+   ShowMouse();
+}
+void far save_file()
+{
+	Fname fn;
+	int size;
+	void far *image;
+	char far*file1;
+	image = (void far *)farmalloc(size);
+	if(image == NULL)
+		{
+		MB.Message(200,150,400,250,"Couldn\'t Allocate Memory");
+		return;
+		}
+	getimage(200,200,400,350,image);
+
+	fn.window(200,200,400,350,"Save As ","   Filename");
+	fn.getname();
+	fn.resetname();
+	file1 = (char far*)farmalloc(13);
+	_fstrcpy(file1,fn.filename);
+
+	putimage(200,200,image,0);
+	farfree(image);
+
+	cfile = fopen(file1,"a+");
+	if(cfile == NULL)
+	{
+	   MB.Message(100,100,150,250,"Error in File");
+	   return;
+	}
+	else
+	 {
+	 size = fwrite((void far*)mem, sizeof(letter), mh, cfile);
+	 fileshow.changeprompt(file1);
+	 MB.Message(100,100,200,200,"Saved And Exiting");
+	 }
+}
+/* ออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออออ */
+int  far openfile()
+{
+	 char far*files;
+	 ffblk f1;
+	 files = (char far*)farmalloc(13);//130
+
+	 findfirst("*.mwp",&f1,0);
+	 _fstrcpy(files,f1.ff_name);
+
+   for(int i = 0 ; ! findnext(&f1) ; i++)
+   {
+	   files = (char far*) farrealloc( files, ( i * 13 ) + 13 );
+	   if( files == 0 )
+	   {
+		 MB.Message(100,100,300,200,"Memory Not available ");
+		 return 0;
+	   }
+	   _fstrcpy(files+( i * 13 ) , f1.ff_name );
+	 }
+
+	 char c;
+	 c = scrollbox(200,100,430,130,files, i,7,1,7);
+	 if(c == -1)
+	     return 0;
+	 --c;
+	 letter hh;
+	 cfile  = fopen(files+(c*13),"r");
+	 rewind(cfile);
+	 fileshow.changeprompt(files+( c * 13));
+	 for(int k = 0 ; !feof(cfile); k++)
+	 {
+		 fread( &hh, sizeof(letter), 1, cfile);
+		 mem[k].chr = hh.chr;
+		 mem[k].font = hh.font;
+		 mem[k].size = hh.size;
+	 }
+	   Print(k, 567);
+	   mh = k;
+	   farfree(files);
+	return i;
+}
+
+void far Music()
+{
+ char hmusic[6][55] ={
+				 { "Chura Liya hai tumane..."},
+				 { "Na mango sona chandi... "},
+			   { "Chura ke dil mera...    "},
+			   { "Gupt..                  "},
+			   { "Mere khwabo mein jo aye."},
+			   { "Title song              "}
+			 };
+ char music[7][ScrollWindowWidth] ={
+				 {" Yado ki Barat         "},
+				 {" Boby                  "},
+				 {" Main Khiladi tu anadi "},
+			   {" Gupt                  "},
+			   {" Gupt					"},
+			   {" Karz                  "},
+			   {" Piano                 "}
+			};
+			char cho;
+			cho = Pop_up_menu(200,100,430,270,music,7,1,7,hmusic);
+			void far *ptr[4];int a,b;
+			if(save_screen(ptr))
+			{
+			closegraph();
+			switch(cho)
+			{
+				case 1:
+				  system("wpyadok");break;
+				case 2:
+				  system("mwpsona");break;
+				case 3:
+				  system("akshilpa");break;
+				case 4:
+				  system("mwpgupt");break;
+				case 5:
+				  system("mwgupt1");break;
+				case 6:
+				  system("mwpmusic");break;
+				case 7:
+				 system("mwppiano");break;
+				default :printf("\a");
+			}
+			detectgraph(&a,&b);
+			initgraph(&a,&b,"\\tc");
+			setbkcolor(0);
+			restore_screen(ptr);
+			}
+			else MB.Message(200,100,400,200,"Insufficient Memory");
+			ShowMouse();
+			SetMousePossition(100,100);
+			return;
+}
+
+void far Painter()
+{
+  int a,b;
+  void far *ptr[4];
+		if(save_screen(ptr))
+		{
+		closegraph();
+		system("mwpbrush");
+		detectgraph(&a,&b);
+		initgraph(&a,&b,"\\tc");
+		setbkcolor(0);
+		restore_screen(ptr);
+		ShowMouse();
+		SetMousePossition(100,100);
+		}
+		else MB.Message(200,100,400,200,"Insufficient Memory");
+		return;
+
+}
+
+void far Calculator()
+{
+  int a,b;
+  void far *ptr[4];
+
+		if(save_screen(ptr))
+		{
+		closegraph();
+		system("mwpcalc");
+		detectgraph(&a,&b);
+		initgraph(&a,&b,"\\tc");
+		setbkcolor(0);
+		restore_screen(ptr);
+		ShowMouse();
+		SetMousePossition(100,100);
+		}
+		else MB.Message(200,100,400,200,"Insufficient Memory");
+		return;
+}
+
+
+
+#endif
